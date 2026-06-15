@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#ffffff" />
 <script>
-  // Always open at the top; don't let the browser restore a prior scroll position.
+  // Always open at the top: no scroll restore, and ignore any deep-link hash on entry.
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (location.hash) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
 </script>
 <title>University Life · Strategy &amp; Organizational Development — NYU</title>
 <meta name="description" content="The Strategy and Organizational Development team advances a culture of continuous improvement, inclusion, and organizational excellence across NYU's Division of University Life." />
@@ -887,10 +888,12 @@ function runLoader(){
         loader.style.display='none';
         if (window.__heroIn) window.__heroIn();
         if (hasST) ScrollTrigger.refresh();
+        forceTop();
       }});
     } else {
       loader.style.display='none';
     }
+    forceTop();
   }
   if (hasGSAP){
     const o={p:0};
@@ -904,17 +907,27 @@ function runLoader(){
   setTimeout(finish, 4000);
 }
 
+/* Force the page to the very top (defeats browser scroll restoration / hash jumps). */
+function forceTop(){
+  try { window.scrollTo(0,0); } catch(e){}
+  if (lenis){ try { lenis.scrollTo(0,{immediate:true,force:true}); } catch(e){} }
+}
+
 /* ---------------- Boot ---------------- */
 window.addEventListener('DOMContentLoaded', ()=>{
   try { initScene(); } catch(e){ console.warn('scene', e); }
   try { initLenis(); } catch(e){ console.warn('lenis', e); }
   try { initAnimations(); } catch(e){ console.warn('anim', e); }
   try { initUI(); } catch(e){ console.warn('ui', e); }
+  forceTop();
 });
 window.addEventListener('load', ()=>{
+  forceTop();
   runLoader();
-  if (hasST) setTimeout(()=>ScrollTrigger.refresh(), 600);
+  if (hasST) setTimeout(()=>{ ScrollTrigger.refresh(); forceTop(); }, 600);
 });
+// Reset to top when the page is restored from the back/forward (bfcache) cache.
+window.addEventListener('pageshow', (e)=>{ if (e.persisted) forceTop(); });
 </script>
 </body>
 </html>
