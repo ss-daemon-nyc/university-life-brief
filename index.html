@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0a0118" />
+<script>
+  // Always open at the top: stop the browser from restoring a prior scroll position.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+</script>
 <title>University Life — Strategy & Organizational Development</title>
 <meta name="description" content="A concise snapshot of key developments across the Division of University Life — Issues, Impact, and Outlook for University Leadership and the UL Council." />
 
@@ -1106,9 +1110,18 @@ footer {
 <script>
 gsap.registerPlugin(ScrollTrigger);
 
+/* =================== SCROLL-TO-TOP ON LOAD =================== */
+// Pin to the very top before the intro plays (covers reloads, shared links,
+// and back/forward-cache restores). behavior:'instant' bypasses CSS smooth scroll.
+function pinTop() { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
+pinTop();
+window.addEventListener('pageshow', (e) => { if (e.persisted) pinTop(); });
+
 /* =================== LOADER =================== */
 window.addEventListener('load', () => {
+  pinTop();
   setTimeout(() => {
+    pinTop();
     gsap.to('#loader', {
       opacity: 0, duration: 0.8, ease: 'power2.out',
       onComplete: () => { document.getElementById('loader').style.display = 'none'; }
