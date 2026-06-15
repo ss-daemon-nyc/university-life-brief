@@ -1,5 +1,7 @@
 # University Life — Strategy & Organizational Development
 
+**Live:** https://ss-daemon-nyc.github.io/university-life-brief/
+
 An award-style landing page for NYU's Division of University Life **Strategy and
 Organizational Development (SaOD)** team, built with **GSAP** and **Three.js**.
 
