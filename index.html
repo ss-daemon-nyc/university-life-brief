@@ -181,7 +181,9 @@ header.scrolled{background:rgba(255,255,255,.78);backdrop-filter:blur(16px);-web
 
 /* ----- marquee ----- */
 .marquee{padding:clamp(30px,5vw,46px) 0;border-block:1px solid var(--border);overflow:hidden;white-space:nowrap}
-.marquee-track{display:inline-flex;gap:2.6rem;will-change:transform}
+/* padding-right matches the gap so the seam between the two looped
+   copies spaces evenly (gap alone doesn't apply between the copies) */
+.marquee-track{display:inline-flex;gap:2.6rem;padding-right:2.6rem;will-change:transform}
 .marquee-track span{font-family:var(--serif);font-style:italic;font-size:clamp(1.4rem,3vw,2.2rem);color:var(--text-faint)}
 .marquee-track .star{color:var(--violet-bright);font-style:normal}
 
@@ -987,7 +989,7 @@ function initAnimations(){
   const mt = document.querySelector('.marquee-track');
   if (mt){
     const clone = mt.cloneNode(true);
-    mt.parentNode.appendChild(clone);
+    mt.after(clone);   // adjacent to the original (no whitespace node) so the seam spaces evenly
     gsap.to('.marquee-track',{xPercent:-100,repeat:-1,duration:22,ease:'none'});
   }
 
