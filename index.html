@@ -9,7 +9,7 @@
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   if (location.hash) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
 </script>
-<title>University Life · Strategy &amp; Organizational Development — NYU</title>
+<title>University Life · Strategy &amp; Organizational Development - NYU</title>
 <meta name="description" content="The Strategy and Organizational Development team advances a culture of continuous improvement, inclusion, and organizational excellence across NYU's Division of University Life." />
 <meta property="og:title" content="University Life · Strategy & Organizational Development" />
 <meta property="og:description" content="Coherence, alignment, and organizational excellence across NYU's Division of University Life." />
@@ -200,8 +200,9 @@ header.scrolled{background:rgba(255,255,255,.78);backdrop-filter:blur(16px);-web
 
 /* ----- areas (horizontal pin on desktop) ----- */
 .areas{background:linear-gradient(180deg,transparent,rgba(109,40,217,.08),transparent);position:relative}
-.areas-head{padding:clamp(80px,12vw,140px) 0 0}
-.areas-track{display:flex;gap:clamp(20px,2.5vw,34px);padding:clamp(40px,6vw,80px) clamp(20px,5vw,64px) clamp(70px,10vw,110px)}
+.areas-head{padding-top:clamp(80px,12vw,140px)}
+.areas-track{display:flex;gap:clamp(20px,2.5vw,34px);padding:clamp(40px,6vw,80px) clamp(20px,5vw,64px) clamp(70px,10vw,110px);
+  padding-left:max(clamp(20px,5vw,64px), calc((100vw - var(--maxw)) / 2 + 64px))}
 .area-card{flex:0 0 min(440px,82vw);background:var(--bg-card);border:1px solid var(--border);border-radius:24px;
   padding:clamp(30px,3.4vw,46px);display:flex;flex-direction:column;min-height:480px;position:relative;overflow:hidden;
   transition:border-color .4s,transform .4s,background .4s}
@@ -304,7 +305,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
 <!-- nav -->
 <header>
   <div class="container nav">
-    <a href="#top" class="brand" aria-label="University Life — Strategy and Organizational Development home">
+    <a href="#top" class="brand" aria-label="University Life - Strategy and Organizational Development home">
       <span class="dot"></span>
       <span>University&nbsp;Life<small>Strategy &amp; Org. Development</small></span>
     </a>
@@ -343,7 +344,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
         <span class="ln"><span data-line><em>Organizational</em></span></span>
         <span class="ln"><span data-line>Development</span></span>
       </h1>
-      <p class="hero-sub" data-reveal>We are the connective tissue of University Life — advancing a culture of continuous improvement, inclusion, and organizational excellence across the division.</p>
+      <p class="hero-sub" data-reveal>We are the connective tissue of University Life - advancing a culture of continuous improvement, inclusion, and organizational excellence across the division.</p>
       <div class="hero-actions" data-reveal>
         <a class="btn btn-primary" href="#areas" data-nav>Explore our work <span class="arrow">↗</span></a>
         <a class="btn btn-ghost" href="#mission" data-nav>Our mission</a>
@@ -360,7 +361,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   <!-- MISSION -->
   <section class="mission" id="mission">
     <div class="container">
-      <div class="section-head"><span class="eyebrow" data-reveal>01 — Mission</span></div>
+      <div class="section-head"><span class="eyebrow" data-reveal>01 - Mission</span></div>
       <p class="mission-statement" data-words>We strengthen <span class="hl">coherence and alignment</span> across the division by fostering shared priorities, consistent practices, and values-driven collaboration.</p>
       <div class="pillars">
         <div class="pillar" data-reveal>
@@ -398,7 +399,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   <section class="caps" id="capabilities">
     <div class="container">
       <div class="section-head">
-        <span class="eyebrow" data-reveal>02 — What we provide</span>
+        <span class="eyebrow" data-reveal>02 - What we provide</span>
         <h2 data-reveal>Six service lines that build capacity across the division.</h2>
       </div>
       <div class="cap-grid">
@@ -434,7 +435,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   <section class="areas" id="areas">
     <div class="container areas-head">
       <div class="section-head">
-        <span class="eyebrow" data-reveal>03 — Our areas</span>
+        <span class="eyebrow" data-reveal>03 - Our areas</span>
         <h2 data-reveal>Four areas, one connected division.</h2>
       </div>
     </div>
@@ -455,7 +456,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
           <div class="glow"></div>
           <span class="an">A/02</span>
           <h3>Education, Learning &amp; Inclusion Strategy</h3>
-          <p class="desc">A cohesive approach to education, inclusion, and flourishing — building shared skills and constructive engagement across differences.</p>
+          <p class="desc">A cohesive approach to education, inclusion, and flourishing - building shared skills and constructive engagement across differences.</p>
           <ul>
             <li>Staff learning &amp; flourishing</li>
             <li>Dialogue &amp; bridge-building</li>
@@ -466,7 +467,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
           <div class="glow"></div>
           <span class="an">A/03</span>
           <h3>Student Communications, Engagement &amp; Storytelling</h3>
-          <p class="desc">Student-facing communications that inform, engage, and connect — shaping how stories are told and where students find community.</p>
+          <p class="desc">Student-facing communications that inform, engage, and connect - shaping how stories are told and where students find community.</p>
           <ul>
             <li>Websites &amp; multi-format communication assets</li>
             <li>Data-informed, audience-centered messaging</li>
@@ -492,7 +493,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   <section class="impact" id="impact">
     <div class="container">
       <div class="section-head">
-        <span class="eyebrow" data-reveal>04 — Impact</span>
+        <span class="eyebrow" data-reveal>04 - Impact</span>
         <h2 data-reveal>Evidence, not anecdote.</h2>
         <p class="lead" data-reveal>Working with partners across the division, we translate experience into insight. A snapshot from Spring 2026 wellbeing data:</p>
       </div>
@@ -502,7 +503,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
         <div class="stat" data-reveal><div class="num" data-count="4" data-suffix="">0</div><div class="lbl">integrated areas working as one team</div></div>
         <div class="stat" data-reveal><div class="num" data-count="6" data-suffix="">0</div><div class="lbl">service lines supporting every unit</div></div>
       </div>
-      <p class="impact-note" data-reveal>Spring 2026 facility &amp; self-reported wellbeing outcomes, tracked in partnership with Athletics, Recreation &amp; Intramurals — reflecting notable improvement over Fall 2025.</p>
+      <p class="impact-note" data-reveal>Spring 2026 facility &amp; self-reported wellbeing outcomes, tracked in partnership with Athletics, Recreation &amp; Intramurals - reflecting notable improvement over Fall 2025.</p>
     </div>
   </section>
 
@@ -510,7 +511,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   <section class="roadmap" id="roadmap">
     <div class="container">
       <div class="section-head">
-        <span class="eyebrow" data-reveal>05 — On the roadmap</span>
+        <span class="eyebrow" data-reveal>05 - On the roadmap</span>
         <h2 data-reveal>What we're building, Spring 2026.</h2>
       </div>
       <div class="road-list">
@@ -526,7 +527,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   <!-- CONNECT -->
   <section class="connect" id="connect">
     <div class="container">
-      <span class="eyebrow" data-reveal style="justify-content:center">06 — Connect</span>
+      <span class="eyebrow" data-reveal style="justify-content:center">06 - Connect</span>
       <h2 data-reveal>Let's build something <em>coherent</em> together.</h2>
       <div class="cta-row" data-reveal>
         <a class="btn btn-primary" href="mailto:university.life@nyu.edu">Email the team <span class="arrow">↗</span></a>
