@@ -843,7 +843,12 @@ function initScene(){
 
   // ---- GSAP: intro reveal, idle sway, and scroll-reactive drift ----
   if (useGsap){
-    if (hasST) gsap.registerPlugin(ScrollTrigger);
+    if (hasST){
+      gsap.registerPlugin(ScrollTrigger);
+      // Don't treat the mobile URL-bar show/hide as a layout change — it
+      // was refreshing ScrollTrigger mid-scroll and snapping the arch.
+      ScrollTrigger.config({ignoreMobileResize:true});
+    }
 
     const startIdle = ()=>{
       gsap.fromTo(archInner.rotation,{y:-0.30},{y:0.30, duration:9,  ease:'sine.inOut',yoyo:true,repeat:-1});
@@ -864,18 +869,32 @@ function initScene(){
 
     // the fixed arch turns & rises gently as you scroll out of the hero
     if (hasST){
-      gsap.to(archMid.position,{y:1.6,ease:'none',
+      const driftY = isTouch ? 0.9  : 1.6;   // gentler drift on small screens
+      const driftR = isTouch ? 0.35 : 0.7;
+      gsap.to(archMid.position,{y:driftY,ease:'none',
         scrollTrigger:{trigger:'#hero', start:'top top', end:'bottom top', scrub:1}});
-      gsap.to(archMid.rotation,{y:0.7,ease:'none',
+      gsap.to(archMid.rotation,{y:driftR,ease:'none',
         scrollTrigger:{trigger:'#hero', start:'top top', end:'bottom top', scrub:1}});
     }
   }
 
-  window.addEventListener('resize', ()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
+  // Resize: debounced, and on touch we ignore pure height changes (the
+  // mobile URL bar) so scrolling no longer churns the renderer/camera.
+  let lastW = window.innerWidth, resizeT = null;
+  function applyResize(){
+    const w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w/h;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(w, h);
     placeArch();
+    if (hasST) ScrollTrigger.refresh();
+  }
+  window.addEventListener('resize', ()=>{
+    const w = window.innerWidth;
+    if (isTouch && w === lastW) return;   // URL-bar height change → ignore
+    lastW = w;
+    clearTimeout(resizeT);
+    resizeT = setTimeout(applyResize, 160);
   });
 }
 
