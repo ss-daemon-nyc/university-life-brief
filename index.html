@@ -582,6 +582,142 @@ const isTouch = window.matchMedia('(hover:none),(pointer:coarse)').matches;
 const hasGSAP = typeof gsap !== 'undefined';
 const hasST = hasGSAP && typeof ScrollTrigger !== 'undefined';
 
+/* ---------------- Washington Square Arch (wireframe) ----------------
+   A 3D wire model of NYU's own landmark, built from the canonical
+   Stanford White proportions (1892): two piers flanking a tall
+   semicircular passage, frieze with the eagle medallion, projecting
+   cornice, and the inscribed attic. Rendered as clean edge-lines tinted
+   along the site's aurora gradient. Replaces the old hero icosahedron. */
+function buildArchWire(){
+  const inner = new THREE.Group();          // idle sway + intro reveal
+  const mid   = new THREE.Group();          // scroll-driven drift / turn
+  const arch  = new THREE.Group();          // placement in the scene
+  mid.add(inner); arch.add(mid);
+
+  // --- vertical violet gradient (deep NYU violet base → light violet crown) ---
+  const STOPS = [
+    {p:0.00, c:[0x57,0x06,0x8c]},   // NYU violet — base
+    {p:0.55, c:[0x7c,0x3a,0xed]},   // violet-bright — mid
+    {p:1.00, c:[0x9b,0x6f,0xf2]},   // light violet — crown
+  ];
+  const auroraAt = (t)=>{
+    t = Math.max(0, Math.min(1, t));
+    for(let i=0;i<STOPS.length-1;i++){
+      const a=STOPS[i], b=STOPS[i+1];
+      if(t<=b.p){
+        const f=(t-a.p)/(b.p-a.p);
+        return [ (a.c[0]+(b.c[0]-a.c[0])*f)/255,
+                 (a.c[1]+(b.c[1]-a.c[1])*f)/255,
+                 (a.c[2]+(b.c[2]-a.c[2])*f)/255 ];
+      }
+    }
+    const l=STOPS[STOPS.length-1].c; return [l[0]/255,l[1]/255,l[2]/255];
+  };
+
+  const MAT = new THREE.LineBasicMaterial({vertexColors:true, transparent:true, opacity:0.6});
+
+  // --- proportions (total height ~5 units) ---
+  const W=3.5, D=1.5, bodyH=3.45;     // body width, depth, height
+  const ow=1.7, half=ow/2, sy=1.95;   // opening width, half-span, spring line
+  const crown=sy+half;                // arch crown ≈ 2.80
+  const px=1.30, pw=0.90;             // pier centre x, pier width
+  const fz=D/2+0.01;                  // front/back face plane
+
+  const parts=[];
+  const add=(obj,x=0,y=0,z=0)=>{ obj.position.set(x,y,z); inner.add(obj); parts.push(obj); };
+
+  // helper: clean edge-lines of a solid
+  const edges = (geo)=> new THREE.LineSegments(new THREE.EdgesGeometry(geo, 28), MAT);
+  const box   = (w,h,d)=> edges(new THREE.BoxGeometry(w,h,d));
+  // helper: a circle outline (medallion / roundel)
+  const ring  = (r,seg=44)=>{
+    const pts=[]; for(let i=0;i<seg;i++){const a=i/seg*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*r,Math.sin(a)*r,0));}
+    return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+  // helper: an arch outline (jamb → semicircle → jamb), for archivolt mouldings
+  const archLine = (h, springY, seg=40)=>{
+    const pts=[ new THREE.Vector3(-h,0,0), new THREE.Vector3(-h,springY,0) ];
+    for(let i=0;i<=seg;i++){const a=Math.PI*(1-i/seg); pts.push(new THREE.Vector3(Math.cos(a)*h, springY+Math.sin(a)*h, 0));}
+    pts.push(new THREE.Vector3(h,0,0));
+    return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+
+  // === main body: inverted-U with the semicircular passage ===
+  const s=new THREE.Shape();
+  s.moveTo(-W/2,0);
+  s.lineTo(-W/2,bodyH);
+  s.lineTo(W/2,bodyH);
+  s.lineTo(W/2,0);
+  s.lineTo(half,0);
+  s.lineTo(half,sy);
+  s.absarc(0,sy,half,0,Math.PI,false);   // right spring → over crown → left spring
+  s.lineTo(-half,0);
+  s.lineTo(-W/2,0);
+  const bodyGeo=new THREE.ExtrudeGeometry(s,{depth:D,bevelEnabled:false,curveSegments:40});
+  bodyGeo.translate(0,0,-D/2);
+  add(edges(bodyGeo));
+
+  // === base: two stepped plinths ===
+  add(box(W+0.70,0.22,D+0.50), 0,-0.23,0);
+  add(box(W+0.35,0.12,D+0.25), 0,-0.06,0);
+
+  // === entablature: architrave + projecting cornice ===
+  add(box(W+0.12,0.12,D+0.12), 0,bodyH+0.06,0);
+  add(box(W+0.45,0.35,D+0.40), 0,bodyH+0.30,0);
+
+  // === attic block (the inscribed top) + suggested inscription lines ===
+  const atticY=bodyH+0.47+0.41;            // centre of attic
+  add(box(3.05,0.82,1.25), 0,atticY,0);
+
+  // === top cap ===
+  add(box(3.35,0.21,1.45), 0,bodyH+0.47+0.82+0.105,0);
+
+  // === per-face detail (front + back) ===
+  for(const f of [fz,-fz]){
+    // archivolt: two concentric mouldings around the opening
+    add(archLine(half+0.10, sy), 0,0,f);
+    add(archLine(half+0.22, sy), 0,0,f);
+    // pier medallions (concentric roundels — the carved shields)
+    add(ring(0.34), -px,1.15,f); add(ring(0.24), -px,1.15,f);
+    add(ring(0.34),  px,1.15,f); add(ring(0.24),  px,1.15,f);
+    // frieze: central eagle medallion + flanking rosettes
+    add(ring(0.20), 0,3.12,f); add(ring(0.12), 0,3.12,f);
+    for(const rx of [-1.18,-0.62,0.62,1.18]) add(ring(0.10), rx,3.12,f);
+    // attic inscription (three suggested text bands)
+    add(box(2.50,0.05,0.04), 0,atticY+0.16, f<0?-0.64:0.64);
+    add(box(2.50,0.05,0.04), 0,atticY,       f<0?-0.64:0.64);
+    add(box(1.60,0.05,0.04), 0,atticY-0.16, f<0?-0.64:0.64);
+  }
+  // impost cornices wrapping each pier at the spring line
+  add(box(pw,0.10,D+0.04), -px,sy,0);
+  add(box(pw,0.10,D+0.04),  px,sy,0);
+
+  // keystone: a single wedge bridging the vault at the crown
+  const ks=new THREE.Shape();
+  ks.moveTo(-0.09,0); ks.lineTo(0.09,0); ks.lineTo(0.15,0.42); ks.lineTo(-0.15,0.42); ks.lineTo(-0.09,0);
+  const ksGeo=new THREE.ExtrudeGeometry(ks,{depth:D,bevelEnabled:false});
+  ksGeo.translate(0,0,-D/2);
+  add(edges(ksGeo), 0, crown-0.04, 0);
+
+  // --- recentre about the arch's centre & bake gradient colours by height ---
+  const bbox=new THREE.Box3().setFromObject(inner);
+  const yMin=bbox.min.y, yMax=bbox.max.y, span=(yMax-yMin)||1;
+  const ctr=bbox.getCenter(new THREE.Vector3());
+  for(const obj of parts){
+    const pos=obj.geometry.attributes.position;
+    const col=new Float32Array(pos.count*3);
+    for(let i=0;i<pos.count;i++){
+      const wy=pos.getY(i)+obj.position.y;           // world height (pre-recentre)
+      const [r,g,b]=auroraAt((wy-yMin)/span);
+      col[i*3]=r; col[i*3+1]=g; col[i*3+2]=b;
+    }
+    obj.geometry.setAttribute('color', new THREE.BufferAttribute(col,3));
+    obj.position.sub(ctr);                            // pivot about centre
+  }
+  arch.userData.mat = MAT;                            // for per-breakpoint opacity
+  return {arch, mid, inner};
+}
+
 /* ---------------- Three.js ambient field ---------------- */
 function initScene(){
   if (typeof THREE === 'undefined') return;
@@ -650,40 +786,95 @@ function initScene(){
   points.position.y = -2.2;
   scene.add(points);
 
-  // central wireframe icosahedron
-  const ico = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(2.6, 1),
-    new THREE.MeshBasicMaterial({color:0x57068c, wireframe:true, transparent:true, opacity:0.22})
-  );
-  ico.position.set(0,1.2,3);
-  scene.add(ico);
+  // central wireframe Washington Square Arch
+  const {arch, mid:archMid, inner:archInner} = buildArchWire();
+  const useGsap      = hasGSAP && !PRM;   // GSAP drives all motion
+  const animateManual = !hasGSAP && !PRM; // sine fallback if GSAP failed to load
 
+  let archBaseY=0.1, archScale=1.12, archOpacity=0.6, archRevealed=false;
+  function placeArch(){
+    const wide  = window.innerWidth >= 980;
+    archBaseY   = wide ? 0.1  : -0.25;
+    archScale   = wide ? 1.12 : 0.82;
+    archOpacity = wide ? 0.6  : 0.42;                  // subtler backdrop on mobile
+    arch.position.set(wide?1.6:0, archBaseY, 2.3);     // offset right on desktop; centred on mobile
+    arch.scale.setScalar(archScale);
+    arch.userData.mat.opacity = archRevealed ? archOpacity : 0;  // hidden until the intro reveals it
+  }
+  placeArch();
+  scene.add(arch);
+
+  // mouse parallax — smoothed with GSAP quickTo when available
   const mouse = {x:0,y:0,tx:0,ty:0};
+  const camX = useGsap ? gsap.quickTo(camera.position,'x',{duration:0.7,ease:'power2.out'}) : null;
+  const camY = useGsap ? gsap.quickTo(camera.position,'y',{duration:0.7,ease:'power2.out'}) : null;
   window.addEventListener('mousemove', e=>{
     mouse.tx = (e.clientX/window.innerWidth - 0.5);
     mouse.ty = (e.clientY/window.innerHeight - 0.5);
+    if (useGsap){ camX(mouse.tx*3); camY(-mouse.ty*2); }
   });
 
   const clock = new THREE.Clock();
   function render(){
     const t = clock.getElapsedTime();
     uniforms.uTime.value = t;
-    mouse.x += (mouse.tx - mouse.x)*0.04;
-    mouse.y += (mouse.ty - mouse.y)*0.04;
-    camera.position.x = mouse.x*3;
-    camera.position.y = -mouse.y*2;
+    if (animateManual){                       // no-GSAP fallback
+      mouse.x += (mouse.tx-mouse.x)*0.04; mouse.y += (mouse.ty-mouse.y)*0.04;
+      camera.position.x = mouse.x*3; camera.position.y = -mouse.y*2;
+      archInner.rotation.y = Math.sin(t*0.15)*0.30;
+      archInner.rotation.x = Math.sin(t*0.11)*0.022;
+      archInner.position.y = Math.sin(t*0.45)*0.06;
+    }
     camera.lookAt(0,0,0);
-    ico.rotation.y = t*0.18;
-    ico.rotation.x = t*0.10;
     renderer.render(scene, camera);
   }
-  if (PRM){ render(); }
-  else { renderer.setAnimationLoop(render); }
+
+  if (PRM){
+    // static, but at a pleasing 3/4 angle so the depth still reads
+    archRevealed = true;
+    arch.userData.mat.opacity = archOpacity;
+    archInner.rotation.set(0.03,-0.42,0);
+    render();
+  } else {
+    renderer.setAnimationLoop(render);
+  }
+  if (animateManual){ archRevealed = true; arch.userData.mat.opacity = archOpacity; }
+
+  // ---- GSAP: intro reveal, idle sway, and scroll-reactive drift ----
+  if (useGsap){
+    if (hasST) gsap.registerPlugin(ScrollTrigger);
+
+    const startIdle = ()=>{
+      gsap.fromTo(archInner.rotation,{y:-0.30},{y:0.30, duration:9,  ease:'sine.inOut',yoyo:true,repeat:-1});
+      gsap.fromTo(archInner.rotation,{x:-0.02},{x:0.035,duration:6.5,ease:'sine.inOut',yoyo:true,repeat:-1});
+      gsap.fromTo(archInner.position,{y:-0.06},{y:0.06, duration:5,  ease:'sine.inOut',yoyo:true,repeat:-1});
+    };
+
+    // called by the loader, in sync with the hero text reveal
+    window.__archIn = ()=>{
+      archRevealed = true;
+      gsap.timeline({onComplete:startIdle})
+        .fromTo(arch.scale,
+          {x:archScale*0.62,y:archScale*0.62,z:archScale*0.62},
+          {x:archScale,y:archScale,z:archScale,duration:1.8,ease:'expo.out'},0)
+        .fromTo(archInner.rotation,{y:-1.25},{y:-0.30,duration:2.0,ease:'expo.out'},0)
+        .fromTo(arch.userData.mat,{opacity:0},{opacity:archOpacity,duration:1.5,ease:'power2.out'},0.15);
+    };
+
+    // the fixed arch turns & rises gently as you scroll out of the hero
+    if (hasST){
+      gsap.to(archMid.position,{y:1.6,ease:'none',
+        scrollTrigger:{trigger:'#hero', start:'top top', end:'bottom top', scrub:1}});
+      gsap.to(archMid.rotation,{y:0.7,ease:'none',
+        scrollTrigger:{trigger:'#hero', start:'top top', end:'bottom top', scrub:1}});
+    }
+  }
 
   window.addEventListener('resize', ()=>{
     camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    placeArch();
   });
 }
 
@@ -888,6 +1079,7 @@ function runLoader(){
       gsap.to(loader,{autoAlpha:0,duration:0.7,ease:'power2.inout',onComplete:()=>{
         loader.style.display='none';
         if (window.__heroIn) window.__heroIn();
+        if (window.__archIn) window.__archIn();
         if (hasST) ScrollTrigger.refresh();
         forceTop();
       }});

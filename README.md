@@ -6,8 +6,10 @@ An award-style landing page for NYU's Division of University Life **Strategy and
 Organizational Development (SaOD)** team, built with **GSAP** and **Three.js**.
 
 ## Highlights
-- Three.js hero: a flowing GLSL particle field + slowly rotating wireframe
-  icosahedron, with mouse parallax (static frame when `prefers-reduced-motion`)
+- Three.js hero: a flowing GLSL particle field + a 3D wireframe of the
+  Washington Square Arch (NYU's landmark) tinted along the aurora gradient,
+  with a gentle sway/float and mouse parallax (static 3/4 frame when
+  `prefers-reduced-motion`)
 - Lenis smooth scrolling synced to GSAP ScrollTrigger
 - Scroll-reveals, word-by-word mission reveal, animated stat counters, and a
   desktop horizontal-pin gallery for the four areas (stacks vertically on mobile)
