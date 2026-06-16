@@ -115,7 +115,8 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;transition:background .4s
 header.scrolled{background:rgba(255,255,255,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom-color:var(--border)}
 .nav{display:flex;align-items:center;justify-content:space-between;height:74px}
 .brand{display:flex;align-items:center;gap:.7rem;font-weight:600;letter-spacing:.01em}
-.brand .dot{width:11px;height:11px;border-radius:50%;background:var(--grad-violet);box-shadow:0 0 16px var(--violet)}
+.torch{display:inline-block;width:auto;height:1em;aspect-ratio:64/94;fill:currentColor;flex:none}
+.brand .torch{height:1.7rem;color:var(--violet);filter:drop-shadow(0 0 9px rgba(87,6,140,.32))}
 .brand small{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.22em;color:var(--text-faint);text-transform:uppercase;font-weight:400}
 .nav-links{display:flex;align-items:center;gap:2.1rem;list-style:none}
 .nav-links a{font-size:.92rem;color:var(--text-dim);position:relative;transition:color .25s}
@@ -185,7 +186,8 @@ header.scrolled{background:rgba(255,255,255,.78);backdrop-filter:blur(16px);-web
    copies spaces evenly (gap alone doesn't apply between the copies) */
 .marquee-track{display:inline-flex;gap:2.6rem;padding-right:2.6rem;will-change:transform}
 .marquee-track span{font-family:var(--serif);font-style:italic;font-size:clamp(1.4rem,3vw,2.2rem);color:var(--text-faint)}
-.marquee-track .star{color:var(--violet-bright);font-style:normal}
+.marquee-track .star{display:inline-flex;align-items:center;color:var(--violet-bright)}
+.marquee-track .star .torch{height:1.5em}
 
 /* ----- capabilities ----- */
 .caps{padding:clamp(90px,14vw,170px) 0}
@@ -287,6 +289,22 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
 </style>
 </head>
 <body>
+<!-- NYU torch (hand-built SVG approximation — swap this <symbol> for the
+     official NYU torch SVG from the brand portal for exact fidelity) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="nyu-torch" viewBox="0 0 64 94">
+    <!-- handle (tapering) -->
+    <path d="M27.3 60 H36.7 L34 90.5 a2 2 0 0 1 -4 0 Z"/>
+    <!-- collar -->
+    <rect x="19.5" y="50.5" width="25" height="8.2" rx="1.8"/>
+    <!-- flames: broad overlapping tongues converging just above the collar -->
+    <path d="M32 50 Q42 27 32 4 Q22 27 32 50 Z"/>
+    <path d="M31.5 50 Q37 29.3 23 13 Q17.5 33.7 31.5 50 Z"/>
+    <path d="M32.5 50 Q27 29.3 41 13 Q46.5 33.7 32.5 50 Z"/>
+    <path d="M30.5 51 Q29.4 33.4 14 25 Q15.1 42.6 30.5 51 Z"/>
+    <path d="M33.5 51 Q34.6 33.4 50 25 Q48.9 42.6 33.5 51 Z"/>
+  </symbol>
+</svg>
 <div class="bg-grad"></div>
 <canvas id="scene"></canvas>
 <div class="grain"></div>
@@ -308,7 +326,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
 <header>
   <div class="container nav">
     <a href="#top" class="brand" aria-label="University Life - Strategy and Organizational Development home">
-      <span class="dot"></span>
+      <svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg>
       <span>University&nbsp;Life<small>Strategy &amp; Org. Development</small></span>
     </a>
     <nav>
@@ -388,12 +406,12 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   <!-- MARQUEE -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
-      <span>Assessment</span><span class="star">✦</span>
-      <span>Communications</span><span class="star">✦</span>
-      <span>Data strategy</span><span class="star">✦</span>
-      <span>Learning initiatives</span><span class="star">✦</span>
-      <span>Organizational development</span><span class="star">✦</span>
-      <span>Strategic planning</span><span class="star">✦</span>
+      <span>Assessment</span><span class="star"><svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg></span>
+      <span>Communications</span><span class="star"><svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg></span>
+      <span>Data strategy</span><span class="star"><svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg></span>
+      <span>Learning initiatives</span><span class="star"><svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg></span>
+      <span>Organizational development</span><span class="star"><svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg></span>
+      <span>Strategic planning</span><span class="star"><svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg></span>
     </div>
   </div>
 
@@ -544,7 +562,7 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
     <div class="container">
       <div class="foot-grid">
         <div class="foot-brand">
-          <a href="#top" class="brand"><span class="dot"></span><span>University&nbsp;Life<small>Strategy &amp; Org. Development</small></span></a>
+          <a href="#top" class="brand"><svg class="torch" aria-hidden="true"><use href="#nyu-torch"></use></svg><span>University&nbsp;Life<small>Strategy &amp; Org. Development</small></span></a>
           <p>Advancing continuous improvement, inclusion, and organizational excellence across NYU's Division of University Life.</p>
         </div>
         <div class="foot-links">
