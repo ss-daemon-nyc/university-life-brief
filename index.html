@@ -220,6 +220,22 @@ header.scrolled{background:rgba(255,255,255,.78);backdrop-filter:blur(16px);-web
 .area-card ul{list-style:none;margin-top:auto;position:relative}
 .area-card li{display:flex;gap:.8rem;align-items:baseline;padding:.55rem 0;border-top:1px solid var(--border);font-size:.92rem;color:var(--text)}
 .area-card li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--violet-bright);flex:none;transform:translateY(-2px)}
+/* prev/next controls for the pinned Four-Areas carousel (desktop only) */
+.areas-viewport{position:relative}
+.areas-nav{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:6;
+  display:flex;justify-content:space-between;padding:0 clamp(12px,2.4vw,34px);
+  pointer-events:none;opacity:0;transition:opacity .45s}
+.areas-nav.is-active{opacity:1}
+.av-btn{pointer-events:auto;width:clamp(46px,4vw,58px);height:clamp(46px,4vw,58px);border-radius:50%;
+  border:1.5px solid var(--border-strong);background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--violet);
+  display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 30px -14px rgba(87,6,140,.5);
+  transition:background .25s,border-color .25s,color .25s,transform .25s,opacity .25s}
+.av-btn:not(:disabled):hover{background:var(--violet);border-color:var(--violet);color:#fff;transform:scale(1.07)}
+.av-btn:not(:disabled):active{transform:scale(.96)}
+.av-btn:disabled{opacity:.3;cursor:default}
+.av-btn svg{width:44%;height:44%}
+@media (max-width:900px){.areas-nav{display:none}}
 
 /* ----- impact ----- */
 .impact{padding:clamp(90px,14vw,170px) 0}
@@ -495,6 +511,14 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
             <li>Data-driven storytelling</li>
           </ul>
         </article>
+      </div>
+      <div class="areas-nav" aria-label="Area navigation">
+        <button class="av-btn av-prev" type="button" aria-label="Previous area">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg>
+        </button>
+        <button class="av-btn av-next" type="button" aria-label="Next area">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+        </button>
       </div>
     </div>
   </section>
@@ -1006,19 +1030,43 @@ function initAnimations(){
   mm.add('(min-width: 901px)', ()=>{
     const track = document.querySelector('.areas-track');
     const viewport = document.querySelector('.areas-viewport');
+    const cards = gsap.utils.toArray('.area-card');
+    const n = cards.length;
+    const nav = document.querySelector('.areas-nav');
+    const prevBtn = nav && nav.querySelector('.av-prev');
+    const nextBtn = nav && nav.querySelector('.av-next');
     const getScroll = ()=> track.scrollWidth - window.innerWidth + (window.innerWidth*0.06);
+    let st;
+    // the pin scrubs the track horizontally with scroll; the travel is shorter than the cards'
+    // combined width, so we step through the scroll PROGRESS in n equal stops (one per card)
+    // rather than pixel-aligning each card (which would collapse the last cards onto one stop).
+    const indexNow = ()=> st ? Math.max(0,Math.min(n-1, Math.round(st.progress*(n-1)))) : 0;
+    const syncArrows = ()=>{ if(!prevBtn) return; const i=indexNow();
+      prevBtn.disabled = i<=0; nextBtn.disabled = i>=n-1; };
+    const goTo = i=>{ i=Math.max(0,Math.min(n-1,i)); if(!st) return;
+      // land 1px inside the pin's range so we never sit exactly on a boundary (which hides the nav)
+      const target = Math.max(st.start+1, Math.min(st.end-1, st.start + (i/(n-1))*(st.end - st.start)));
+      if (lenis) lenis.scrollTo(target,{duration:0.7,force:true});
+      else window.scrollTo({top:target,behavior:'smooth'}); };
     const tween = gsap.to(track,{
       x:()=> -getScroll(), ease:'none',
       scrollTrigger:{
         trigger:'.areas', start:'top top',
         end:()=> '+=' + getScroll(),
-        pin:true, scrub:0.6, invalidateOnRefresh:true, anticipatePin:1
+        pin:true, scrub:0.6, invalidateOnRefresh:true, anticipatePin:1,
+        onUpdate:syncArrows,
+        onToggle:self=>{ if(nav) nav.classList.toggle('is-active', self.isActive); }
       }
     });
+    st = tween.scrollTrigger;
+    if(prevBtn) prevBtn.addEventListener('click',()=>goTo(indexNow()-1));
+    if(nextBtn) nextBtn.addEventListener('click',()=>goTo(indexNow()+1));
+    syncArrows();
     // one-shot card entrance as the section arrives (reliably fires before the pin engages)
     const reveal = gsap.fromTo('.area-card',{opacity:0,y:50},{opacity:1,y:0,duration:0.7,stagger:0.12,
       ease:'power3.out',scrollTrigger:{trigger:'.areas',start:'top 70%'}});
-    return ()=>{ tween && tween.kill(); reveal && reveal.scrollTrigger && reveal.scrollTrigger.kill(); };
+    return ()=>{ tween && tween.kill(); reveal && reveal.scrollTrigger && reveal.scrollTrigger.kill();
+      if(nav) nav.classList.remove('is-active'); };
   });
   // mobile: simple reveal for area cards
   mm.add('(max-width: 900px)', ()=>{
