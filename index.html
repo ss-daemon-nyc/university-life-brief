@@ -286,6 +286,12 @@ footer{border-top:1px solid var(--border);padding:clamp(50px,7vw,80px) 0 40px}
   *{animation-duration:.001ms!important;transition-duration:.001ms!important}
   html{scroll-behavior:auto}
 }
+
+/* semi-bold throughout for easier reading — placed last so it wins the cascade.
+   Bumps Inter body copy (400) and the Fraunces display headlines (300/400) to 600;
+   the JetBrains Mono eyebrow/label accents keep their original weight. */
+.hero-sub,.lead,.pillar p,.cap p,.area-card .desc,.area-card li,.stat .lbl,.nav-links a,.foot-brand p,.foot-col a,
+.section-head h2,.hero h1,.hero-meta b,.mission-statement,.pillar h3,.cap h3,.area-card h3,.stat .num,.road-item h4,.connect h2{font-weight:600}
 </style>
 </head>
 <body>
