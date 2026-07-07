@@ -618,10 +618,12 @@ const hasST = hasGSAP && typeof ScrollTrigger !== 'undefined';
 
 /* ---------------- Washington Square Arch (wireframe) ----------------
    A 3D wire model of NYU's own landmark, built from the canonical
-   Stanford White proportions (1892): two piers flanking a tall
-   semicircular passage, frieze with the eagle medallion, projecting
-   cornice, and the inscribed attic. Rendered as clean edge-lines tinted
-   along the site's aurora gradient. Replaces the old hero icosahedron. */
+   Stanford White proportions (1892): two piers on their own plinths
+   (the passage stays open to the ground), coffered voussoirs and twin
+   archivolts around the vault, spandrel victories, trophy panels with
+   greek-key bands on the piers, a dentil course under the cornice, the
+   eagle over the star-marked keystone, and the inscribed attic between
+   swagged pedestals. Edge-lines tinted along the site's violet gradient. */
 function buildArchWire(){
   const inner = new THREE.Group();          // idle sway + intro reveal
   const mid   = new THREE.Group();          // scroll-driven drift / turn
@@ -675,6 +677,50 @@ function buildArchWire(){
     pts.push(new THREE.Vector3(h,0,0));
     return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), MAT);
   };
+  // helper: dashed semicircular arc — the coffered voussoirs around the vault
+  const dashedArc=(r,springY,nd=13)=>{
+    const pts=[];
+    for(let i=0;i<nd;i++){
+      const a0=Math.PI*(i+0.18)/nd, a1=Math.PI*(i+0.82)/nd;
+      pts.push(new THREE.Vector3(Math.cos(a0)*r,springY+Math.sin(a0)*r,0),
+               new THREE.Vector3(Math.cos(a1)*r,springY+Math.sin(a1)*r,0));
+    }
+    return new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+  // helper: partial arc (wing strokes for the spandrel victories / frieze eagle)
+  const arcSeg=(r,a0,a1,seg=14)=>{
+    const pts=[]; for(let i=0;i<=seg;i++){const a=a0+(a1-a0)*i/seg; pts.push(new THREE.Vector3(Math.cos(a)*r,Math.sin(a)*r,0));}
+    return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+  // helper: row of small vertical ticks (dentil course)
+  const ticks=(w,h,step)=>{
+    const pts=[]; for(let x=-w/2;x<=w/2+1e-6;x+=step){ pts.push(new THREE.Vector3(x,-h/2,0), new THREE.Vector3(x,h/2,0)); }
+    return new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+  // helper: straight horizontal line (masonry coursing)
+  const hline=(w)=>new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+    [new THREE.Vector3(-w/2,0,0),new THREE.Vector3(w/2,0,0)]), MAT);
+  // helper: greek-key band suggested as a square wave
+  const meander=(w,h,n=8)=>{
+    const pts=[new THREE.Vector3(-w/2,-h/2,0)]; const sw=w/n; let y=-h/2;
+    for(let i=0;i<n;i++){ y=-y; pts.push(new THREE.Vector3(-w/2+i*sw,y,0), new THREE.Vector3(-w/2+(i+1)*sw,y,0)); }
+    return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+  // helper: five-point star (frieze + keystone torch flame)
+  const star=(r)=>{
+    const pts=[]; for(let i=0;i<=5;i++){const a=Math.PI/2+i*4*Math.PI/5; pts.push(new THREE.Vector3(Math.cos(a)*r,Math.sin(a)*r,0));}
+    return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+  // helper: crossed diagonals (the trophy-panel standards)
+  const cross=(l)=>{
+    const pts=[new THREE.Vector3(-l,-l,0),new THREE.Vector3(l,l,0),new THREE.Vector3(-l,l,0),new THREE.Vector3(l,-l,0)];
+    return new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
+  // helper: hanging swag curve (attic pedestal garlands)
+  const swag=(w,d,seg=10)=>{
+    const pts=[]; for(let i=0;i<=seg;i++){const x=(i/seg-0.5)*w; pts.push(new THREE.Vector3(x,-d*(1-Math.pow(2*x/w,2)),0));}
+    return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), MAT);
+  };
 
   // === main body: inverted-U with the semicircular passage ===
   const s=new THREE.Shape();
@@ -691,37 +737,68 @@ function buildArchWire(){
   bodyGeo.translate(0,0,-D/2);
   add(edges(bodyGeo));
 
-  // === base: two stepped plinths ===
-  add(box(W+0.70,0.22,D+0.50), 0,-0.23,0);
-  add(box(W+0.35,0.12,D+0.25), 0,-0.06,0);
+  // === base: stepped plinths under each pier — the passage stays open to the ground ===
+  for(const sx of [-1,1]){
+    add(box(1.15,0.22,D+0.50), sx*1.425,-0.23,0);
+    add(box(1.02,0.12,D+0.25), sx*1.36 ,-0.06,0);
+  }
 
-  // === entablature: architrave + projecting cornice ===
+  // === entablature: architrave + dentil course + projecting cornice ===
   add(box(W+0.12,0.12,D+0.12), 0,bodyH+0.06,0);
-  add(box(W+0.45,0.32,D+0.40), 0,bodyH+0.28,0);   // cornice top = bodyH+0.44
+  add(box(W+0.45,0.32,D+0.40), 0,bodyH+0.34,0);
+  const corniceTop=bodyH+0.50;
 
-  // === attic block (the inscribed top) + suggested inscription lines ===
-  // kept shallow to match the real arch (the inscribed band, not a tall block)
-  const atticY=bodyH+0.44+0.29;            // centre of a flatter attic (h 0.58)
-  add(box(2.90,0.58,1.18), 0,atticY,0);
-
-  // === top cap ===
-  add(box(3.15,0.18,1.38), 0,bodyH+0.44+0.58+0.09,0);
+  // === attic: central inscribed panel between two pedestal blocks over the piers ===
+  // kept shallow — a low parapet band, not a tall block — for truer proportions
+  const atticY=corniceTop+0.20;
+  add(box(1.90,0.40,1.18), 0,atticY,0);            // central slab
+  add(box(0.78,0.40,1.34), -1.32,atticY,0);        // end pedestals
+  add(box(0.78,0.40,1.34),  1.32,atticY,0);
+  add(box(3.60,0.14,1.46), 0,corniceTop+0.47,0);   // crowning cap course
 
   // === per-face detail (front + back) ===
   for(const f of [fz,-fz]){
-    // archivolt: two concentric mouldings around the opening
+    const zo=(f>0?1:-1);
+    // archivolt mouldings + coffered voussoirs around the vault
     add(archLine(half+0.10, sy), 0,0,f);
     add(archLine(half+0.22, sy), 0,0,f);
-    // pier medallions (concentric roundels — the carved shields)
-    add(ring(0.34), -px,1.15,f); add(ring(0.24), -px,1.15,f);
-    add(ring(0.34),  px,1.15,f); add(ring(0.24),  px,1.15,f);
-    // frieze: central eagle medallion + flanking rosettes
-    add(ring(0.20), 0,3.12,f); add(ring(0.12), 0,3.12,f);
-    for(const rx of [-1.18,-0.62,0.62,1.18]) add(ring(0.10), rx,3.12,f);
-    // attic inscription (three suggested text bands)
-    add(box(2.50,0.05,0.04), 0,atticY+0.16, f<0?-0.64:0.64);
-    add(box(2.50,0.05,0.04), 0,atticY,       f<0?-0.64:0.64);
-    add(box(1.60,0.05,0.04), 0,atticY-0.16, f<0?-0.64:0.64);
+    add(dashedArc(half+0.05, sy, 13), 0,0,f);
+    add(dashedArc(half+0.16, sy, 17), 0,0,f);
+    // spandrel victories — feathered wing strokes sweeping toward the crown
+    for(const s of [-1,1]){
+      for(const r of [0.15,0.22,0.29]){
+        const wg=arcSeg(r, Math.PI*0.42, Math.PI*0.95);
+        add(wg, s*1.04, 2.52, f); wg.scale.x=-s;
+      }
+    }
+    // frieze: spread-winged eagle over the keystone, wreaths and stars alongside
+    for(const s of [-1,1]){
+      for(const r of [0.13,0.20,0.27]){
+        const wg=arcSeg(r, Math.PI*0.30, Math.PI*0.88);
+        add(wg, 0, 3.16, f); wg.scale.x=s;
+      }
+    }
+    add(star(0.07), 0,2.98,f);                       // torch-flame star on the keystone
+    for(const rx of [-1.18,-0.62,0.62,1.18]){ add(ring(0.10), rx,3.12,f); add(ring(0.06), rx,3.12,f); }
+    for(const rx of [-1.44,-0.90,0.90,1.44]) add(star(0.07), rx,3.12,f);
+    // dentil course tucked between architrave and cornice
+    add(ticks(W-0.25,0.06,0.11), 0,bodyH+0.15, zo*((D+0.12)/2+0.02));
+    // piers: greek-key band, trophy panel (shield + crossed standards), coursing
+    for(const s of [-1,1]){
+      add(meander(pw-0.10,0.10,8), s*px,1.80,f);
+      add(box(0.62,0.94,0.02), s*px,1.19,f);
+      add(box(0.48,0.80,0.02), s*px,1.19,f);
+      add(ring(0.14), s*px,1.35,f);
+      add(cross(0.14), s*px,1.00,f);
+      for(const cy of [0.16,0.34,0.52]) add(hline(pw-0.06), s*px,cy,f);
+    }
+    // attic panels: central inscription + swagged end pedestals
+    add(box(1.55,0.24,0.02), 0,atticY, zo*0.60);
+    add(box(1.10,0.05,0.02), 0,atticY, zo*0.61);
+    for(const s of [-1,1]){
+      add(box(0.52,0.24,0.02), s*1.32,atticY, zo*0.68);
+      add(swag(0.34,0.08),     s*1.32,atticY+0.05, zo*0.69);
+    }
   }
   // impost cornices wrapping each pier at the spring line
   add(box(pw,0.10,D+0.04), -px,sy,0);
